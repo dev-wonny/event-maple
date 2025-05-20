@@ -6,6 +6,37 @@ import { RewardStatus } from '../../../../libs/common/enums/reward-status.enum';
 import { TriggerType } from '../../../../libs/common/enums/trigger-type.enum';
 import { RewardType } from '../../../../libs/common/enums/reward-type.enum';
 
+export class RewardSnapshot {
+  @ApiProperty({
+    description: '보상 타입',
+    enum: RewardType,
+    example: RewardType.ITEM,
+  })
+  @Prop({ type: String, enum: Object.values(RewardType) })
+  type: string;
+
+  @ApiProperty({
+    description: '보상 수량',
+    example: 1,
+  })
+  @Prop({ type: Number })
+  quantity: number;
+
+  @ApiProperty({
+    description: '아이템 ID',
+    example: 'item-001',
+  })
+  @Prop({ type: String })
+  itemId?: string;
+
+  @ApiProperty({
+    description: '보상 설명',
+    example: '레어 아이템',
+  })
+  @Prop({ type: String })
+  description?: string;
+}
+
 @Schema({ timestamps: true })
 export class UserEventRewardRequest extends Document {
   @ApiProperty({
@@ -21,13 +52,6 @@ export class UserEventRewardRequest extends Document {
   })
   @Prop({ required: true })
   eventId: string;
-
-  @ApiProperty({
-    description: '보상 ID',
-    example: '60d21b4667d0d8992e610c87',
-  })
-  @Prop({ required: true })
-  rewardId: string;
 
   @ApiProperty({
     description: '트리거 타입',
@@ -55,20 +79,8 @@ export class UserEventRewardRequest extends Document {
       description: '레어 아이템',
     },
   })
-  @Prop({
-    type: {
-      type: { type: String, enum: Object.values(RewardType) },
-      quantity: { type: Number },
-      itemId: { type: String },
-      description: { type: String },
-    },
-  })
-  rewardSnapshot: {
-    type: RewardType;
-    quantity: number;
-    itemId?: string;
-    description?: string;
-  };
+  @Prop({ type: RewardSnapshot })
+  rewardSnapshot: RewardSnapshot;
 
   @ApiProperty({
     description: '보상 상태',
@@ -102,10 +114,7 @@ export const UserEventRewardRequestSchema = SchemaFactory.createForClass(
   UserEventRewardRequest,
 );
 
-// 인덱스 추가
-UserEventRewardRequestSchema.index(
-  { userId: 1, eventId: 1, rewardId: 1 },
-  { unique: true },
-);
+// 중복 요청 방지를 위한 인덱스 설정
+UserEventRewardRequestSchema.index({ userId: 1, eventId: 1 }, { unique: true });
 UserEventRewardRequestSchema.index({ status: 1 });
 UserEventRewardRequestSchema.index({ createdAt: 1 });

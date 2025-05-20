@@ -1,11 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsMongoId,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { TriggerType } from '../../../../libs/common/enums/trigger-type.enum';
 import { RewardDeliveryType } from '../../../../libs/common/enums/reward-delivery-type.enum';
 
@@ -25,14 +19,6 @@ export class CreateUserEventRewardRequestDto {
   @IsString()
   @IsNotEmpty()
   eventId: string;
-
-  @ApiProperty({
-    description: '보상 ID',
-    example: '60d21b4667d0d8992e610c87',
-  })
-  @IsMongoId()
-  @IsNotEmpty()
-  rewardId: string;
 
   @ApiProperty({
     description: '트리거 타입',

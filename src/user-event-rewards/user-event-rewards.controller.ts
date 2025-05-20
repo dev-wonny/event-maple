@@ -40,12 +40,11 @@ export class UserEventRewardsController {
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: '이벤트 또는 보상을 찾을 수 없습니다.',
+    description: '이벤트를 찾을 수 없습니다.',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description:
-      '이벤트에 해당 보상이 포함되어 있지 않거나 이벤트 기간이 아닙니다.',
+    description: '이벤트에 보상이 설정되어 있지 않거나 이벤트 기간이 아닙니다.',
   })
   async create(
     @Body() createUserEventRewardRequestDto: CreateUserEventRewardRequestDto,
@@ -107,8 +106,16 @@ export class UserEventRewardsController {
   @Patch(':id/status')
   @ApiOperation({ summary: '보상 요청 상태 업데이트' })
   @ApiParam({ name: 'id', description: '보상 요청 ID' })
-  @ApiQuery({ name: 'status', enum: RewardStatus, description: '새로운 상태' })
-  @ApiQuery({ name: 'reason', required: false, description: '상태 변경 이유' })
+  @ApiQuery({
+    name: 'status',
+    description: '새로운 상태',
+    enum: RewardStatus,
+  })
+  @ApiQuery({
+    name: 'reason',
+    description: '상태 변경 이유 (선택 사항)',
+    required: false,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: '보상 요청 상태가 성공적으로 업데이트되었습니다.',

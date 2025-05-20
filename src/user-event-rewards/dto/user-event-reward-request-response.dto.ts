@@ -24,12 +24,6 @@ export class UserEventRewardRequestResponseDto {
   eventId: string;
 
   @ApiProperty({
-    description: '보상 ID',
-    example: '60d21b4667d0d8992e610c87',
-  })
-  rewardId: string;
-
-  @ApiProperty({
     description: '트리거 타입',
     enum: TriggerType,
     example: TriggerType.MANUAL,

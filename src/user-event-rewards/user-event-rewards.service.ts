@@ -31,16 +31,16 @@ export class UserEventRewardsService {
   async create(
     createUserEventRewardRequestDto: CreateUserEventRewardRequestDto,
   ): Promise<UserEventRewardRequestResponseDto> {
-    const { userId, eventId, rewardId } = createUserEventRewardRequestDto;
+    const { userId, eventId } = createUserEventRewardRequestDto;
 
     // 1. 중복 요청 확인
     const existingRequest = await this.userEventRewardRequestModel
-      .findOne({ userId, eventId, rewardId })
+      .findOne({ userId, eventId })
       .lean();
 
     if (existingRequest) {
       throw new ConflictException(
-        `이미 해당 이벤트(${eventId})의 보상(${rewardId})을 요청했습니다.`,
+        `이미 해당 이벤트(${eventId})의 보상을 요청했습니다.`,
       );
     }
 
@@ -55,10 +55,10 @@ export class UserEventRewardsService {
       );
     }
 
-    // 3. 이벤트에 해당 보상이 포함되어 있는지 확인
-    if (!event.rewardIds.includes(rewardId)) {
+    // 3. 이벤트에 보상이 있는지 확인
+    if (!event.rewardIds || event.rewardIds.length === 0) {
       throw new BadRequestException(
-        `이벤트(${eventId})에 해당 보상(${rewardId})이 포함되어 있지 않습니다.`,
+        `이벤트(${eventId})에 보상이 설정되어 있지 않습니다.`,
       );
     }
 
@@ -70,18 +70,22 @@ export class UserEventRewardsService {
       );
     }
 
-    // 5. 보상 정보 가져오기
-    const reward = await this.rewardModel.findById(rewardId).lean();
+    // 5. 이벤트의 첫 번째 보상 ID를 사용하여 보상 정보 조회
+    const firstRewardId = event.rewardIds[0];
+    const reward = await this.rewardModel.findById(firstRewardId).lean();
+
     if (!reward) {
-      throw new NotFoundException(`보상(${rewardId})을 찾을 수 없습니다.`);
+      throw new BadRequestException(
+        `이벤트(${eventId})에 유효한 보상이 없습니다.`,
+      );
     }
 
-    // 6. 보상 스냅샷 생성
+    // 6. 보상 스냅샷 생성 - 문자열로 변환하여 저장
     const rewardSnapshot = {
       type: reward.type,
       quantity: reward.quantity,
-      itemId: reward.itemId,
-      description: reward.description,
+      itemId: reward.itemId || undefined,
+      description: reward.description || undefined,
     };
 
     // 7. 요청 시간 설정 (제공되지 않은 경우 현재 시간으로 설정)
@@ -171,7 +175,6 @@ export class UserEventRewardsService {
       id: request._id.toString(),
       userId: request.userId,
       eventId: request.eventId,
-      rewardId: request.rewardId,
       trigger: request.trigger,
       deliveryType: request.deliveryType,
       rewardSnapshot: request.rewardSnapshot,

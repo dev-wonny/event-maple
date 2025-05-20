@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EventsModule } from './events/events.module';
+import { ConditionsModule } from './conditions/conditions.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { EventsModule } from './events/events.module';
       }),
     }),
     EventsModule,
+    ConditionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -33,35 +33,7 @@ export class Reward {
   description: string;
 }
 
-@Schema({
-  timestamps: true,
-  toJSON: {
-    transform: function (doc, ret) {
-      // UTC를 KST로 변환 (UTC+9)
-      if (ret.createdAt) {
-        ret.createdAt = new Date(
-          new Date(ret.createdAt).getTime() + 9 * 60 * 60 * 1000,
-        );
-      }
-      if (ret.updatedAt) {
-        ret.updatedAt = new Date(
-          new Date(ret.updatedAt).getTime() + 9 * 60 * 60 * 1000,
-        );
-      }
-      if (ret.startAt) {
-        ret.startAt = new Date(
-          new Date(ret.startAt).getTime() + 9 * 60 * 60 * 1000,
-        );
-      }
-      if (ret.endAt) {
-        ret.endAt = new Date(
-          new Date(ret.endAt).getTime() + 9 * 60 * 60 * 1000,
-        );
-      }
-      return ret;
-    },
-  },
-})
+@Schema({ timestamps: true })
 export class Event extends Document {
   @Prop({ required: true, unique: true })
   @ApiProperty({ description: '이벤트 ID' })

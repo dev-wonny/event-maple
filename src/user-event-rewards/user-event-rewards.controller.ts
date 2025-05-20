@@ -6,19 +6,12 @@ import {
   Param,
   Patch,
   Post,
-  Query,
 } from '@nestjs/common';
-import {
-  ApiOperation,
-  ApiParam,
-  ApiQuery,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserEventRewardsService } from './user-event-rewards.service';
 import { CreateUserEventRewardRequestDto } from './dto/create-user-event-reward-request.dto';
 import { UserEventRewardRequestResponseDto } from './dto/user-event-reward-request-response.dto';
-import { RewardStatus } from '../../../libs/common/enums/reward-status.enum';
+import { UpdateUserEventRewardStatusDto } from './dto/update-user-event-reward-status.dto';
 
 @ApiTags('user-event-rewards')
 @Controller('user-event-rewards')
@@ -28,24 +21,7 @@ export class UserEventRewardsController {
   ) {}
 
   @Post()
-  @ApiOperation({ summary: '유저 이벤트 보상 요청 생성' })
-  @ApiResponse({
-    status: HttpStatus.CREATED,
-    description: '보상 요청이 성공적으로 생성되었습니다.',
-    type: UserEventRewardRequestResponseDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.CONFLICT,
-    description: '이미 해당 이벤트의 보상을 요청했습니다.',
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: '이벤트를 찾을 수 없습니다.',
-  })
-  @ApiResponse({
-    status: HttpStatus.BAD_REQUEST,
-    description: '이벤트에 보상이 설정되어 있지 않거나 이벤트 기간이 아닙니다.',
-  })
+  @ApiOperation({ summary: '보상 요청 생성' })
   async create(
     @Body() createUserEventRewardRequestDto: CreateUserEventRewardRequestDto,
   ): Promise<UserEventRewardRequestResponseDto> {
@@ -53,12 +29,11 @@ export class UserEventRewardsController {
   }
 
   @Get('user/:userId')
-  @ApiOperation({ summary: '유저의 모든 이벤트 보상 요청 조회' })
-  @ApiParam({ name: 'userId', description: '유저 ID' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: '유저의 모든 이벤트 보상 요청 목록을 반환합니다.',
-    type: [UserEventRewardRequestResponseDto],
+  @ApiOperation({ summary: '사용자별 보상 요청 목록 조회' })
+  @ApiParam({
+    name: 'userId',
+    description: '사용자 ID',
+    example: 'user-123',
   })
   async findAllByUserId(
     @Param('userId') userId: string,
@@ -67,13 +42,16 @@ export class UserEventRewardsController {
   }
 
   @Get('user/:userId/event/:eventId')
-  @ApiOperation({ summary: '특정 이벤트에 대한 유저의 보상 요청 조회' })
-  @ApiParam({ name: 'userId', description: '유저 ID' })
-  @ApiParam({ name: 'eventId', description: '이벤트 ID' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: '특정 이벤트에 대한 유저의 보상 요청 목록을 반환합니다.',
-    type: [UserEventRewardRequestResponseDto],
+  @ApiOperation({ summary: '사용자의 특정 이벤트 보상 요청 조회' })
+  @ApiParam({
+    name: 'userId',
+    description: '사용자 ID',
+    example: 'user-123',
+  })
+  @ApiParam({
+    name: 'eventId',
+    description: '이벤트 ID',
+    example: 'event-001',
   })
   async findAllByUserIdAndEventId(
     @Param('userId') userId: string,
@@ -86,16 +64,11 @@ export class UserEventRewardsController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: '특정 보상 요청 조회' })
-  @ApiParam({ name: 'id', description: '보상 요청 ID' })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: '특정 보상 요청 정보를 반환합니다.',
-    type: UserEventRewardRequestResponseDto,
-  })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: '보상 요청을 찾을 수 없습니다.',
+  @ApiOperation({ summary: '보상 요청 상세 조회' })
+  @ApiParam({
+    name: 'id',
+    description: '보상 요청 ID',
+    example: '60d21b4667d0d8992e610c85',
   })
   async findById(
     @Param('id') id: string,
@@ -105,16 +78,10 @@ export class UserEventRewardsController {
 
   @Patch(':id/status')
   @ApiOperation({ summary: '보상 요청 상태 업데이트' })
-  @ApiParam({ name: 'id', description: '보상 요청 ID' })
-  @ApiQuery({
-    name: 'status',
-    description: '새로운 상태',
-    enum: RewardStatus,
-  })
-  @ApiQuery({
-    name: 'reason',
-    description: '상태 변경 이유 (선택 사항)',
-    required: false,
+  @ApiParam({
+    name: 'id',
+    description: '보상 요청 ID',
+    example: '60d21b4667d0d8992e610c85',
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -127,9 +94,8 @@ export class UserEventRewardsController {
   })
   async updateStatus(
     @Param('id') id: string,
-    @Query('status') status: RewardStatus,
-    @Query('reason') reason?: string,
+    @Body() updateStatusDto: UpdateUserEventRewardStatusDto,
   ): Promise<UserEventRewardRequestResponseDto> {
-    return this.userEventRewardsService.updateStatus(id, status, reason);
+    return this.userEventRewardsService.updateStatus(id, updateStatusDto);
   }
 }

@@ -5,10 +5,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { UserEventRewardRequest } from './schemas/user-event-reward-request.schema';
 import { CreateUserEventRewardRequestDto } from './dto/create-user-event-reward-request.dto';
 import { UserEventRewardRequestResponseDto } from './dto/user-event-reward-request-response.dto';
+import { UpdateUserEventRewardStatusDto } from './dto/update-user-event-reward-status.dto';
 import { Event } from '../events/schemas/event.schema';
 import { Reward } from '../rewards/schemas/reward.schema';
 import { RewardStatus } from '../../../libs/common/enums/reward-status.enum';
@@ -137,6 +138,11 @@ export class UserEventRewardsService {
    * @param id 보상 요청 ID
    */
   async findById(id: string): Promise<UserEventRewardRequestResponseDto> {
+    // ObjectId 유효성 검사
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`유효하지 않은 ID 형식입니다: ${id}`);
+    }
+
     const request = await this.userEventRewardRequestModel.findById(id).lean();
     if (!request) {
       throw new NotFoundException(`보상 요청(${id})을 찾을 수 없습니다.`);
@@ -145,18 +151,30 @@ export class UserEventRewardsService {
   }
 
   /**
-   * 보상 요청 상태를 업데이트합니다.
+   * 보상 요청의 상태를 업데이트합니다.
    * @param id 보상 요청 ID
-   * @param status 새로운 상태
-   * @param reason 상태 변경 이유 (선택 사항)
+   * @param updateStatusDto 상태 업데이트 DTO
    */
   async updateStatus(
     id: string,
-    status: RewardStatus,
-    reason?: string,
+    updateStatusDto: UpdateUserEventRewardStatusDto,
   ): Promise<UserEventRewardRequestResponseDto> {
+    // ObjectId 유효성 검사
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`유효하지 않은 ID 형식입니다: ${id}`);
+    }
+
+    const { status, reason } = updateStatusDto;
     const updatedRequest = await this.userEventRewardRequestModel
-      .findByIdAndUpdate(id, { status, reason }, { new: true })
+      .findByIdAndUpdate(
+        id,
+        {
+          status,
+          reason,
+          ...(status === RewardStatus.SUCCESS && { processedAt: new Date() }),
+        },
+        { new: true },
+      )
       .lean();
 
     if (!updatedRequest) {

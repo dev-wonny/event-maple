@@ -7,6 +7,7 @@ import { EventsModule } from './events/events.module';
 import { ConditionsModule } from './conditions/conditions.module';
 import { RewardsModule } from './rewards/rewards.module';
 import { UserEventRewardsModule } from './user-event-rewards/user-event-rewards.module';
+import { UserEventRewardHistoryModule } from './user-event-reward-history/user-event-reward-history.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { UserEventRewardsModule } from './user-event-rewards/user-event-rewards.
     ConditionsModule,
     RewardsModule,
     UserEventRewardsModule,
+    UserEventRewardHistoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -13,6 +13,8 @@ import { UpdateUserEventRewardStatusDto } from './dto/update-user-event-reward-s
 import { Event } from '../events/schemas/event.schema';
 import { Reward } from '../rewards/schemas/reward.schema';
 import { RewardStatus } from '../../../libs/common/enums/reward-status.enum';
+import { UserEventRewardHistoryService } from '../user-event-reward-history/user-event-reward-history.service';
+import { CreateUserEventRewardHistoryDto } from '../user-event-reward-history/dto/create-user-event-reward-history.dto';
 
 @Injectable()
 export class UserEventRewardsService {
@@ -23,6 +25,7 @@ export class UserEventRewardsService {
     private readonly eventModel: Model<Event>,
     @InjectModel(Reward.name)
     private readonly rewardModel: Model<Reward>,
+    private readonly userEventRewardHistoryService: UserEventRewardHistoryService,
   ) {}
 
   /**
@@ -165,6 +168,17 @@ export class UserEventRewardsService {
     }
 
     const { status, reason } = updateStatusDto;
+
+    // 기존 요청 조회
+    const existingRequest = await this.userEventRewardRequestModel
+      .findById(id)
+      .lean();
+
+    if (!existingRequest) {
+      throw new NotFoundException(`보상 요청(${id})을 찾을 수 없습니다.`);
+    }
+
+    // 상태 업데이트
     const updatedRequest = await this.userEventRewardRequestModel
       .findByIdAndUpdate(
         id,
@@ -177,8 +191,26 @@ export class UserEventRewardsService {
       )
       .lean();
 
-    if (!updatedRequest) {
-      throw new NotFoundException(`보상 요청(${id})을 찾을 수 없습니다.`);
+    // 상태가 SUCCESS로 변경된 경우에만 히스토리에 기록
+    if (status === RewardStatus.SUCCESS) {
+      // 보상 스냅샷에서 필요한 정보 추출
+      const { rewardSnapshot } = existingRequest;
+
+      if (rewardSnapshot) {
+        // 히스토리 생성을 위한 DTO 생성
+        const historyDto: CreateUserEventRewardHistoryDto = {
+          userId: existingRequest.userId,
+          eventId: existingRequest.eventId,
+          rewardId: existingRequest._id.toString(), // 보상 요청 ID를 rewardId로 사용
+          quantity: rewardSnapshot.quantity,
+          itemId: rewardSnapshot.itemId,
+          requestedAt: new Date(), // 현재 시간을 요청 시간으로 사용
+          deliveredAt: new Date(),
+        };
+
+        // 히스토리 생성
+        await this.userEventRewardHistoryService.create(historyDto);
+      }
     }
 
     return this.mapToResponseDto(updatedRequest);

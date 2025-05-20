@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsDate,
+  IsDateString,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -42,14 +42,14 @@ export class CreateUserEventRewardHistoryDto {
     example: '2025-01-01T12:00:00Z',
   })
   @IsOptional()
-  @IsDate()
-  requestedAt?: Date;
+  @IsDateString()
+  requestedAt?: string;
 
   @ApiProperty({
     description: '보상이 실제 지급된 시간',
     example: '2025-01-01T12:01:30Z',
   })
-  @IsNotEmpty()
-  @IsDate()
-  deliveredAt: Date;
+  @IsOptional()
+  @IsDateString()
+  deliveredAt?: string;
 }

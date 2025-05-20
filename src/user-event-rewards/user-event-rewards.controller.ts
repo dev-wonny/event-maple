@@ -6,12 +6,14 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserEventRewardsService } from './user-event-rewards.service';
 import { CreateUserEventRewardRequestDto } from './dto/create-user-event-reward-request.dto';
 import { UserEventRewardRequestResponseDto } from './dto/user-event-reward-request-response.dto';
 import { UpdateUserEventRewardStatusDto } from './dto/update-user-event-reward-status.dto';
+import { RewardStatus } from '../common/enums/reward-status.enum';
 
 @ApiTags('user-event-rewards')
 @Controller('user-event-rewards')
@@ -74,6 +76,34 @@ export class UserEventRewardsController {
     @Param('id') id: string,
   ): Promise<UserEventRewardRequestResponseDto> {
     return this.userEventRewardsService.findById(id);
+  }
+
+  @Get()
+  @ApiOperation({ summary: '모든 보상 요청 조회 (관리자용)' })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: RewardStatus,
+    description: '보상 상태로 필터링 (PENDING, SUCCESS, FAILED)',
+  })
+  @ApiQuery({
+    name: 'eventId',
+    required: false,
+    description: '이벤트 ID로 필터링',
+  })
+  async findAll(
+    @Query('status') status?: RewardStatus,
+    @Query('eventId') eventId?: string,
+  ): Promise<UserEventRewardRequestResponseDto[]> {
+    if (eventId && status) {
+      return this.userEventRewardsService.findAllByEventIdAndStatus(eventId, status);
+    } else if (eventId) {
+      return this.userEventRewardsService.findAllByEventId(eventId);
+    } else if (status) {
+      return this.userEventRewardsService.findAllByStatus(status);
+    } else {
+      return this.userEventRewardsService.findAll();
+    }
   }
 
   @Patch(':id/status')

@@ -1,5 +1,19 @@
-import { Body, Controller, Get, HttpStatus, Param, Post } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
+import {
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { UserEventRewardHistoryService } from './user-event-reward-history.service';
 import { CreateUserEventRewardHistoryDto } from './dto/create-user-event-reward-history.dto';
 import { UserEventRewardHistoryResponseDto } from './dto/user-event-reward-history-response.dto';
@@ -28,12 +42,49 @@ export class UserEventRewardHistoryController {
 
   @Get()
   @ApiOperation({ summary: '모든 보상 지급 기록 조회' })
+  @ApiQuery({
+    name: 'eventId',
+    required: false,
+    description: '이벤트 ID로 필터링',
+  })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    description:
+      'deliveredAt 시작 날짜로 필터링 (ISO 형식: YYYY-MM-DDTHH:mm:ssZ)',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    description:
+      'deliveredAt 종료 날짜로 필터링 (ISO 형식: YYYY-MM-DDTHH:mm:ssZ)',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: '모든 보상 지급 기록 목록',
     type: [UserEventRewardHistoryResponseDto],
   })
-  async findAll(): Promise<UserEventRewardHistoryResponseDto[]> {
+  async findAll(
+    @Query('eventId') eventId?: string,
+    @Query('startDate') startDateStr?: string,
+    @Query('endDate') endDateStr?: string,
+  ): Promise<UserEventRewardHistoryResponseDto[]> {
+    // 날짜 범위 필터링
+    if (startDateStr && endDateStr) {
+      const startDate = new Date(startDateStr);
+      const endDate = new Date(endDateStr);
+      return this.userEventRewardHistoryService.findAllByDateRange(
+        startDate,
+        endDate,
+      );
+    }
+
+    // 이벤트 ID 필터링
+    if (eventId) {
+      return this.userEventRewardHistoryService.findAllByEventId(eventId);
+    }
+
+    // 필터링 없이 모든 기록 조회
     return this.userEventRewardHistoryService.findAll();
   }
 

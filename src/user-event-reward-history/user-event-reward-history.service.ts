@@ -22,9 +22,19 @@ export class UserEventRewardHistoryService {
   async create(
     createUserEventRewardHistoryDto: CreateUserEventRewardHistoryDto,
   ): Promise<UserEventRewardHistoryResponseDto> {
-    const newHistory = await this.userEventRewardHistoryModel.create(
-      createUserEventRewardHistoryDto,
-    );
+    // 날짜 문자열을 Date 객체로 변환
+    const historyData = {
+      ...createUserEventRewardHistoryDto,
+      requestedAt: createUserEventRewardHistoryDto.requestedAt
+        ? new Date(createUserEventRewardHistoryDto.requestedAt)
+        : new Date(),
+      deliveredAt: createUserEventRewardHistoryDto.deliveredAt
+        ? new Date(createUserEventRewardHistoryDto.deliveredAt)
+        : new Date(),
+    };
+
+    const newHistory =
+      await this.userEventRewardHistoryModel.create(historyData);
     return this.mapToResponseDto(newHistory.toObject());
   }
 
@@ -33,7 +43,10 @@ export class UserEventRewardHistoryService {
    * @returns 모든 보상 지급 기록 목록
    */
   async findAll(): Promise<UserEventRewardHistoryResponseDto[]> {
-    const histories = await this.userEventRewardHistoryModel.find().lean();
+    const histories = await this.userEventRewardHistoryModel
+      .find()
+      .sort({ deliveredAt: -1 })
+      .lean();
     return histories.map((history) => this.mapToResponseDto(history));
   }
 
@@ -80,6 +93,41 @@ export class UserEventRewardHistoryService {
   ): Promise<UserEventRewardHistoryResponseDto[]> {
     const histories = await this.userEventRewardHistoryModel
       .find({ userId, eventId })
+      .sort({ deliveredAt: -1 })
+      .lean();
+    return histories.map((history) => this.mapToResponseDto(history));
+  }
+
+  /**
+   * 이벤트별 보상 지급 기록을 조회합니다.
+   * @param eventId 이벤트 ID
+   */
+  async findAllByEventId(
+    eventId: string,
+  ): Promise<UserEventRewardHistoryResponseDto[]> {
+    const histories = await this.userEventRewardHistoryModel
+      .find({ eventId })
+      .sort({ deliveredAt: -1 })
+      .lean();
+    return histories.map((history) => this.mapToResponseDto(history));
+  }
+
+  /**
+   * 날짜 범위로 보상 지급 기록을 조회합니다.
+   * @param startDate 시작 날짜
+   * @param endDate 종료 날짜
+   */
+  async findAllByDateRange(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<UserEventRewardHistoryResponseDto[]> {
+    const histories = await this.userEventRewardHistoryModel
+      .find({
+        deliveredAt: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      })
       .sort({ deliveredAt: -1 })
       .lean();
     return histories.map((history) => this.mapToResponseDto(history));

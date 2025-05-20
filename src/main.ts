@@ -23,7 +23,6 @@ async function bootstrap() {
     .addTag('events')
     .addTag('conditions')
     .addTag('rewards')
-    .addTag('reward-history')
     .addTag('user-event-rewards')
     .addBearerAuth(
       {

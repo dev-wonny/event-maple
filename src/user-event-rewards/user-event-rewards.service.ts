@@ -204,8 +204,8 @@ export class UserEventRewardsService {
           rewardId: existingRequest._id.toString(), // 보상 요청 ID를 rewardId로 사용
           quantity: rewardSnapshot.quantity,
           itemId: rewardSnapshot.itemId,
-          requestedAt: new Date(), // 현재 시간을 요청 시간으로 사용
-          deliveredAt: new Date(),
+          requestedAt: new Date().toISOString(), // ISO 문자열로 변환
+          deliveredAt: new Date().toISOString(), // ISO 문자열로 변환
         };
 
         // 히스토리 생성
@@ -214,6 +214,61 @@ export class UserEventRewardsService {
     }
 
     return this.mapToResponseDto(updatedRequest);
+  }
+
+  /**
+   * 모든 보상 요청을 조회합니다. (관리자용)
+   * @returns 모든 보상 요청 목록
+   */
+  async findAll(): Promise<UserEventRewardRequestResponseDto[]> {
+    const requests = await this.userEventRewardRequestModel
+      .find()
+      .sort({ createdAt: -1 })
+      .lean();
+    return requests.map((request) => this.mapToResponseDto(request));
+  }
+
+  /**
+   * 상태별로 보상 요청을 필터링하여 조회합니다.
+   * @param status 보상 상태 (PENDING, SUCCESS, FAILED)
+   * @returns 필터링된 보상 요청 목록
+   */
+  async findAllByStatus(status: RewardStatus): Promise<UserEventRewardRequestResponseDto[]> {
+    const requests = await this.userEventRewardRequestModel
+      .find({ status })
+      .sort({ createdAt: -1 })
+      .lean();
+    return requests.map((request) => this.mapToResponseDto(request));
+  }
+
+  /**
+   * 이벤트별로 보상 요청을 필터링하여 조회합니다.
+   * @param eventId 이벤트 ID
+   * @returns 필터링된 보상 요청 목록
+   */
+  async findAllByEventId(eventId: string): Promise<UserEventRewardRequestResponseDto[]> {
+    const requests = await this.userEventRewardRequestModel
+      .find({ eventId })
+      .sort({ createdAt: -1 })
+      .lean();
+    return requests.map((request) => this.mapToResponseDto(request));
+  }
+
+  /**
+   * 이벤트와 상태로 보상 요청을 필터링하여 조회합니다.
+   * @param eventId 이벤트 ID
+   * @param status 보상 상태
+   * @returns 필터링된 보상 요청 목록
+   */
+  async findAllByEventIdAndStatus(
+    eventId: string,
+    status: RewardStatus
+  ): Promise<UserEventRewardRequestResponseDto[]> {
+    const requests = await this.userEventRewardRequestModel
+      .find({ eventId, status })
+      .sort({ createdAt: -1 })
+      .lean();
+    return requests.map((request) => this.mapToResponseDto(request));
   }
 
   /**

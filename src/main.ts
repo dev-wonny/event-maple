@@ -21,6 +21,9 @@ async function bootstrap() {
     .setDescription('이벤트 관리 시스템을 위한 API 문서')
     .setVersion('1.0')
     .addTag('events')
+    .addTag('conditions')
+    .addTag('rewards')
+    .addTag('reward-history')
     .addBearerAuth(
       {
         type: 'http',

@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { EventsModule } from './events/events.module';
 import { ConditionsModule } from './conditions/conditions.module';
+import { RewardsModule } from './rewards/rewards.module';
 
 @Module({
   imports: [
@@ -16,11 +17,14 @@ import { ConditionsModule } from './conditions/conditions.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_URI') || 'mongodb://localhost:27017/event',
+        uri:
+          configService.get<string>('MONGODB_URI') ||
+          'mongodb://localhost:27017/event',
       }),
     }),
     EventsModule,
     ConditionsModule,
+    RewardsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

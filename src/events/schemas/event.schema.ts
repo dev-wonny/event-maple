@@ -1,37 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import { EventCategory } from '../../../../libs/common/enums/event-category.enum';
 import { TriggerType } from '../../../../libs/common/enums/trigger-type.enum';
 import { RewardDeliveryType } from '../../../../libs/common/enums/reward-delivery-type.enum';
-
-export class Condition {
-  @ApiProperty({ description: '조건 타입' })
-  type: string;
-
-  @ApiProperty({ description: '조건 하위 타입' })
-  subType: string;
-
-  @ApiProperty({ description: '조건 값' })
-  value: number;
-
-  @ApiProperty({ description: '조건 설명' })
-  description: string;
-}
-
-export class Reward {
-  @ApiProperty({ description: '보상 타입' })
-  type: string;
-
-  @ApiProperty({ description: '보상 아이템 ID' })
-  itemId?: string;
-
-  @ApiProperty({ description: '보상 수량' })
-  quantity: number;
-
-  @ApiProperty({ description: '보상 설명' })
-  description: string;
-}
 
 @Schema({ timestamps: true })
 export class Event extends Document {
@@ -47,13 +19,19 @@ export class Event extends Document {
   @ApiProperty({ description: '이벤트 카테고리', enum: EventCategory })
   category: string;
 
-  @Prop({ type: [Object], required: true })
-  @ApiProperty({ description: '이벤트 조건', type: [Condition] })
-  conditions: Condition[];
+  @Prop({
+    type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Condition' }],
+    required: true,
+  })
+  @ApiProperty({ description: '이벤트 조건 ID 목록' })
+  conditionIds: string[];
 
-  @Prop({ type: [Object], required: true })
-  @ApiProperty({ description: '이벤트 보상', type: [Reward] })
-  rewards: Reward[];
+  @Prop({
+    type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Reward' }],
+    required: true,
+  })
+  @ApiProperty({ description: '이벤트 보상 ID 목록' })
+  rewardIds: string[];
 
   @Prop({ required: true, enum: TriggerType, type: String })
   @ApiProperty({ description: '트리거 타입', enum: TriggerType })

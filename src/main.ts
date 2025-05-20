@@ -24,6 +24,7 @@ async function bootstrap() {
     .addTag('conditions')
     .addTag('rewards')
     .addTag('reward-history')
+    .addTag('user-event-rewards')
     .addBearerAuth(
       {
         type: 'http',

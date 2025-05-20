@@ -29,17 +29,19 @@ export class RewardsService {
       id: reward._id ? reward._id.toString() : reward.id,
       type: reward.type,
       quantity: reward.quantity,
-      rewardDeliveryType: reward.rewardDeliveryType,
       itemId: reward.itemId,
+      description: reward.description,
       createdAt: reward.createdAt,
       updatedAt: reward.updatedAt,
     });
   }
 
   // 헬퍼 메서드: RewardHistory 객체를 RewardHistoryResponseDto로 변환
-  private mapToRewardHistoryResponseDto(history: any): RewardHistoryResponseDto {
+  private mapToRewardHistoryResponseDto(
+    history: any,
+  ): RewardHistoryResponseDto {
     const rewards = Array.isArray(history.reward)
-      ? history.reward.map(reward => this.mapToRewardResponseDto(reward))
+      ? history.reward.map((reward) => this.mapToRewardResponseDto(reward))
       : [];
 
     return new RewardHistoryResponseDto({
@@ -171,8 +173,8 @@ export class RewardsService {
 
   async findAllRewardHistories(): Promise<RewardHistoryResponseDto[]> {
     const rewardHistories = await this.rewardHistoryModel.find().lean().exec();
-    return rewardHistories.map(
-      (history) => this.mapToRewardHistoryResponseDto(history),
+    return rewardHistories.map((history) =>
+      this.mapToRewardHistoryResponseDto(history),
     );
   }
 
@@ -201,8 +203,8 @@ export class RewardsService {
       .lean()
       .exec();
 
-    return rewardHistories.map(
-      (history) => this.mapToRewardHistoryResponseDto(history),
+    return rewardHistories.map((history) =>
+      this.mapToRewardHistoryResponseDto(history),
     );
   }
 

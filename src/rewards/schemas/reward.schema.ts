@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { RewardDeliveryType, RewardType } from '../../../../libs/common';
+import { RewardType } from '../../../../libs/common';
 
 @Schema({ timestamps: true })
 export class Reward extends Document {
@@ -14,15 +14,11 @@ export class Reward extends Document {
   @Prop({ type: Number, required: true })
   quantity: number;
 
-  @Prop({
-    type: String,
-    enum: Object.values(RewardDeliveryType),
-    required: true,
-  })
-  rewardDeliveryType: RewardDeliveryType;
-
   @Prop({ type: String, required: false })
   itemId?: string;
+
+  @Prop({ type: String, required: false })
+  description?: string;
 
   @Prop({
     type: Date,
